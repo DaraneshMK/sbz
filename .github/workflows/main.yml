@@ -1,19 +1,30 @@
-name: LocalXpose Tunnel
+name: CI
 
 on:
   push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  tunnel:
+  build:
     runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Login to LocalXpose
-        run: .\loclx.exe account login --token 6kvFHtPDBIrUvDeNCZx52B8QFyiFj3L1VdDOdpKZ
+      - name: Enable TS
+        run: |
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+          Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
 
-      - name: Start Tunnel
+      - name: Download and Extract LocalXpose
+        run: |
+          Invoke-WebRequest https://loclx-client.s3.amazonaws.com/loclx-windows-amd64.zip -OutFile localxpose.zip
+          Expand-Archive localxpose.zip -DestinationPath .\
+
+      - name: Login to LocalXpose
+        run: .\loclx.exe account login --token ${{ secrets.LOCALXPOSE_TOKEN }}
+
+      - name: Start LocalXpose Tunnel for RDP
         run: .\loclx.exe tunnel tcp --to localhost:3389
