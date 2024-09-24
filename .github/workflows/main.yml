@@ -13,20 +13,20 @@ jobs:
 
       - name: Enable TS
         run: |
-          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
           Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
 
-      - name: Download and Extract ngrok for creating secure tunnels
+      - name: Download and Install LocalXpose
         run: |
-          Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
-          Expand-Archive ngrok.zip
+          Invoke-WebRequest https://api.localxpose.io/api/v2/download/windows/amd64 -OutFile localxpose.zip
+          Expand-Archive localxpose.zip -DestinationPath .
 
-      - name: Authenticate with ngrok using the provided token
-        run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+      - name: Authenticate with LocalXpose
+        run: .\localxpose\lx.exe account login $Env:LOCALXPOSE_TOKEN
         env:
-          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-          
-      - name: Start an ngrok tunnel for port 3389
-        run: .\ngrok\ngrok.exe tcp 3389
+          LOCALXPOSE_TOKEN: ${{ secrets.LOCALXPOSE_TOKEN }}
+
+      - name: Start LocalXpose TCP Tunnel for port 3389
+        run: .\localxpose\lx.exe tcp --port 3389
