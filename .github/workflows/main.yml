@@ -20,13 +20,13 @@ jobs:
 
       - name: Download and Install LocalXpose
         run: |
-          Invoke-WebRequest https://api.localxpose.io/api/v2/download/windows/amd64 -OutFile localxpose.zip
+          Invoke-WebRequest https://loclx-client.s3.amazonaws.com/loclx-windows-amd64.zip -OutFile localxpose.zip
           Expand-Archive localxpose.zip -DestinationPath .
 
       - name: Authenticate with LocalXpose
-        run: .\localxpose\lx.exe account login $Env:LOCALXPOSE_TOKEN
+        run: .\loclx.exe account login $Env:LOCALXPOSE_TOKEN
         env:
           LOCALXPOSE_TOKEN: ${{ secrets.LOCALXPOSE_TOKEN }}
 
       - name: Start LocalXpose TCP Tunnel for port 3389
-        run: .\localxpose\lx.exe tcp --port 3389
+        run: .\loclx.exe tcp --port 3389
