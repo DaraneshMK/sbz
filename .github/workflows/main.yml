@@ -18,15 +18,13 @@ jobs:
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
           Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
 
-      - name: Download and Install LocalXpose
+      - name: Download and Extract LocalXpose
         run: |
           Invoke-WebRequest https://loclx-client.s3.amazonaws.com/loclx-windows-amd64.zip -OutFile localxpose.zip
-          Expand-Archive localxpose.zip -DestinationPath .
+          Expand-Archive localxpose.zip -DestinationPath .\
 
-      - name: Authenticate with LocalXpose
-        run: .\loclx.exe account login $Env:LOCALXPOSE_TOKEN
-        env:
-          LOCALXPOSE_TOKEN: ${{ secrets.LOCALXPOSE_TOKEN }}
+      - name: Login to LocalXpose
+        run: .\loclx.exe account login --token ${{ secrets.LOCALXPOSE_TOKEN }}
 
-      - name: Start LocalXpose TCP Tunnel for port 3389
-        run: .\loclx.exe tcp --port 3389
+      - name: Start LocalXpose Tunnel for RDP
+        run: .\loclx.exe tunnel tcp --to localhost:3389
