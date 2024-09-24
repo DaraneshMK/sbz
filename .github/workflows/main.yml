@@ -24,7 +24,9 @@ jobs:
           Expand-Archive localxpose.zip -DestinationPath .\
 
       - name: Login to LocalXpose
-        run: .\loclx.exe account login --token ${{ secrets.LOCALXPOSE_TOKEN }}
+        run: .\loclx.exe account login
+        env:
+          LOCLX_TOKEN: ${{ secrets.LOCALXPOSE_TOKEN }}
 
       - name: Start LocalXpose Tunnel for RDP
         run: .\loclx.exe tunnel tcp --to localhost:3389
